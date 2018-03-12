@@ -33,7 +33,8 @@ class Pipeline:
         img = camera_calibration.undistort(np.copy(img), mat, dist)
 
         # Step. warp
-        binary_warped = cv2.warpPerspective(combine_threshold(img), m, (width, height))
+        combine_img = combine_threshold(img)
+        binary_warped = cv2.warpPerspective(combine_img, m, (width, height))
         out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
         
         nwindows = 9
@@ -142,7 +143,7 @@ class Pipeline:
         cv2.putText(result,'Radius of Curvature: %.2fm' % line.curvature,(20,40), cv2.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2)
         
         # Step . Add distance from center
-        position_from_center = line.get_distance_from_center()
+        position_from_center = line.get_distance_from_center(combine_img)
         if position_from_center < 0:
             text = 'left'
         else:

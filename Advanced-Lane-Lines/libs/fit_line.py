@@ -4,15 +4,12 @@ class FitLine:
     def __init__(self):
 
         self.is_first_processed = False
-        
-        self.img = None
-        
+
         self.mse_tolerance = 0.01
         self.left_fit = [np.array([False])] 
         self.right_fit = [np.array([False])] 
         
         self.y_eval = 700
-        self.midx = 640
         self.ym_per_pix = 3.0/72.0 # meter / pixel(y)
         self.xm_per_pix = 3.7/700.0 # meter / pixel(x)
         self.curvature = 0
@@ -47,10 +44,15 @@ class FitLine:
         elif np.absolute(self.curvature - curvature) < 500:
             self.curvature = self.ratio*self.curvature + (1-self.ratio)*(((1 + y1*y1)**(1.5))/np.absolute(y2))
 
-    def get_distance_from_center(self):
-        x_left = self.left_fit[0]*(self.y_eval**2) + self.left_fit[1]*self.y_eval + self.left_fit[2]
-        x_right = self.right_fit[0]*(self.y_eval**2) + self.right_fit[1]*self.y_eval + self.right_fit[2]
-        
-        return ((x_left + x_right)/2.0 - self.midx) * self.xm_per_pix
+    def get_distance_from_center(self,img):
+        if self.right_fit is not None and self.left_fit is not None:
+            h = img.shape[0]
+            car_position = img.shape[1] / 2
+            l_fit_x_int = self.left_fit[0] * h ** 2 + self.left_fit[1] * h + self.left_fit[2]
+            r_fit_x_int = self.right_fit[0] * h ** 2 + self.right_fit[1] * h + self.right_fit[2]
+            lane_center_position = (r_fit_x_int + l_fit_x_int) / 2
+            center_dist = (car_position - lane_center_position) * self.xm_per_pix
+        return center_dist
+
             
         
